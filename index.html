@@ -1243,7 +1243,7 @@
         // Embaralha o array na primeira carga
         if (!sessionStorage.getItem("shuffledQuestions")) {
             questions = selectRandomQuestions(questions, 65);
-            questions.forEach(q => shuffleArray(q.options));
+            questions.forEach(q => updateCorrectAnswerAfterShuffle(q));
             sessionStorage.setItem("shuffledQuestions", JSON.stringify(questions));
         } else {
             questions = JSON.parse(sessionStorage.getItem("shuffledQuestions"));
@@ -1256,13 +1256,30 @@
             }
         }
 
+        // Função para atualizar a posição do correctAnswer após embaralhar
+        function updateCorrectAnswerAfterShuffle(question) {
+            let originalAnswers = question.options.map((option, index) => ({ option, index }));
+            shuffleArray(originalAnswers);
+            let shuffledOptions = originalAnswers.map(a => a.option);
+
+            let newCorrectAnswer = question.correctAnswer.map(correctIndex => {
+                let correctOptionText = question.options[correctIndex];
+                return shuffledOptions.findIndex(option => option === correctOptionText);
+            });
+
+            question.options = shuffledOptions;
+            question.correctAnswer = newCorrectAnswer;
+        }
+
         function renderQuestion() {
             const questionBox = document.getElementById('question-box');
             const questionData = questions[currentQuestionIndex];
 
+            let instructionText = questionData.multiple ? ` (Escolha ${questionData.correctAnswer.length} alternativas)` : "";
+
             questionBox.innerHTML = `
                 <div class="question-number">Questão ${currentQuestionIndex + 1} de ${questions.length}</div>
-                <div class="question-text">${questionData.question}</div>
+                <div class="question-text">${questionData.question}${instructionText}</div>
                 <div class="answers">
                     ${questionData.options.map((option, index) => `
                         <label>
@@ -1299,20 +1316,21 @@
         }
 
         function calculateScore() {
-            let score = 0;
+            let correctAnswers = 0;
             questions.forEach((q, index) => {
                 const selected = selectedAnswers[index] || [];
                 if (JSON.stringify(selected.sort()) === JSON.stringify(q.correctAnswer.sort())) {
-                    score += Math.floor(1000 / questions.length);
+                    correctAnswers++;
                 }
             });
-            return score;
+            let percentage = (correctAnswers / questions.length) * 100;
+            return percentage;
         }
 
         function finishSimulation() {
             const score = calculateScore();
-            const message = score >= 700 ? "Parabéns, você foi aprovado!" : "Infelizmente, não atingiu a pontuação necessária.";
-            alert(`Pontuação: ${score}\n${message}`);
+            const message = score >= 70 ? "Parabéns, você foi aprovado!" : "Infelizmente, não atingiu a pontuação necessária.";
+            alert(`Pontuação: ${score.toFixed(2)}%\n${message}`);
         }
 
         function updateTimer() {
@@ -1329,6 +1347,11 @@
         document.getElementById('next-btn').addEventListener('click', nextQuestion);
         document.getElementById('previous-btn').addEventListener('click', previousQuestion);
         document.getElementById('finish-btn').addEventListener('click', finishSimulation);
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                nextQuestion();
+            }
+        });
 
         setInterval(updateTimer, 1000);
         renderQuestion();

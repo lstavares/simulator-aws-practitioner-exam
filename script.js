@@ -107,9 +107,45 @@ function calculateScore() {
 }
 
 function finishSimulation() {
-	const score = calculateScore();
-	const message = score >= 70 ? "Parabéns, você foi aprovado!" : "Infelizmente, não atingiu a pontuação necessária.";
-	alert(`Pontuação: ${score.toFixed(2)}%\n${message}`);
+    const score = calculateScore();
+    const isApproved = score >= 70;
+    const resultMessage = isApproved ? "Parabéns, você foi aprovado!" : "Infelizmente, não atingiu a pontuação necessária.";
+
+    const report = generateReport();
+
+    // Exibir mensagem e relatório
+    document.body.innerHTML = `
+        <div class="container">
+            <h1>Resultado da Prova</h1>
+            <p>Pontuação: ${score.toFixed(2)}%</p>
+            <p>${resultMessage}</p>
+            <div class="report">${report}</div>
+            <button onclick="window.location.reload()">Refazer Simulado</button>
+        </div>
+    `;
+}
+
+function generateReport() {
+    let reportHTML = "<h2>Relatório de Respostas</h2>";
+    reportHTML += "<ul>";
+
+    questions.forEach((q, index) => {
+        const selected = selectedAnswers[index] || [];
+        const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(q.correctAnswer.sort());
+        const correctOptions = q.correctAnswer.map(i => q.options[i]).join(", ");
+        const selectedOptions = selected.map(i => q.options[i]).join(", ");
+
+        reportHTML += `<li class="${isCorrect ? "correct" : "incorrect"}">`;
+        reportHTML += `<strong>Questão ${index + 1}:</strong> ${q.question}<br>`;
+        reportHTML += `<strong>Escolhido:</strong> ${selectedOptions || "Nenhuma"}<br>`;
+        if (!isCorrect) {
+            reportHTML += `<strong>Correto:</strong> ${correctOptions}<br>`;
+        }
+        reportHTML += "</li>";
+    });
+
+    reportHTML += "</ul>";
+    return reportHTML;
 }
 
 function updateTimer() {

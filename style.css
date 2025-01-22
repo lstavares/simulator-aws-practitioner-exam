@@ -55,3 +55,17 @@ button {
     background-color: #f44336;
     color: white;
 }
+
+.correct {
+    background-color: #d4edda;
+    border-left: 5px solid #28a745;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.incorrect {
+    background-color: #f8d7da;
+    border-left: 5px solid #dc3545;
+    padding: 10px;
+    margin-bottom: 10px;
+}

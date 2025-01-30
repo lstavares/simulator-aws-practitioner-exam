@@ -2,9 +2,10 @@ let questions = [];
 let currentQuestionIndex = 0;
 let selectedAnswers = {};
 let timer = 5400;
+let questionsUrl = 'https://lstavares.github.io/simulator-aws-practitioner-exam/questions.json';
 
 // Carregar perguntas do arquivo JSON
-fetch('https://lstavares.github.io/simulator-aws-practitioner-exam/questions.json')
+fetch(questionsUrl)
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
